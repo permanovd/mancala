@@ -18,7 +18,6 @@ public class JpaConverterBoardStateToJson implements AttributeConverter<BoardSta
         try {
             return objectMapper.writeValueAsString(meta);
         } catch (JsonProcessingException ex) {
-            // TODO Check the right exception to throw here.
             throw new RuntimeException(ex);
         }
     }
@@ -29,7 +28,6 @@ public class JpaConverterBoardStateToJson implements AttributeConverter<BoardSta
             BoardState result = objectMapper.readValue(dbData, BoardState.class);
             return result;
         } catch (IOException ex) {
-            // TODO Check the right exception to throw here.
             throw new RuntimeException(ex);
         }
     }

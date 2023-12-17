@@ -29,7 +29,6 @@ class BoardWalkerTest {
             assertThat(withOwner.pit().number()).isEqualTo(expectedPitNumber);
             assertThat(withOwner.owner()).isEqualTo(owner);
             if (expectedPitNumber == boardSize + 1) {
-                // TODO Separate to another test.
                 assertThat(withOwner.pit().isMancalaPit()).isTrue();
             }
             expectedPitNumber++;
