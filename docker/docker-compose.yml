@@ -25,7 +25,7 @@ services:
         - POSTGRES_DB=games_service
   frontend:
     build:
-      context: ../mangala-frontend
+      context: ../mancala-frontend
       dockerfile: ../docker/frontend/Dockerfile
     depends_on:
       - backend
