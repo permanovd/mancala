@@ -26,7 +26,7 @@ public class DeleteExpiredSessionsJob {
     }
 
     @Transactional
-    @Scheduled(cron = "0 1 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void cleanUp() {
         LocalDateTime dateTime = LocalDateTime.now().minusMonths(1);
         logger.info("Cleaning up expired sessions, ended before {}", dateTime);
