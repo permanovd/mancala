@@ -2,7 +2,7 @@ version: '3'
 services:
   backend:
     build:
-      context: ../game-session-service
+      context: game-session-service
       dockerfile: ../docker/backend/Dockerfile
     ports:
       - "8080:8080"
@@ -15,17 +15,14 @@ services:
   database:
       image: postgres:14-alpine
       ports:
-        - 5432:5432
-      # TODO Fix volume.
-      # volumes:
-        # - ~/docker/data:/var/lib/postgresql/data
+        - "5432:5432"
       environment:
         - POSTGRES_PASSWORD=games_service_passwd
         - POSTGRES_USER=games_service
         - POSTGRES_DB=games_service
   frontend:
     build:
-      context: ../mancala-frontend
+      context: mancala-frontend
       dockerfile: ../docker/frontend/Dockerfile
     depends_on:
       - backend
