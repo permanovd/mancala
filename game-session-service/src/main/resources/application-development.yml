@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/games_service
+    username: games_service
+    password: games_service_passwd

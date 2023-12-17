@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS game_session (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ended_at TIMESTAMP NULL DEFAULT NULL,
+    board_state text NOT NULL
+)
