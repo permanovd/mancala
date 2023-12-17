@@ -1,9 +1,6 @@
 package com.permanovd.gamesessionservice.domain;
 
-import com.permanovd.gamesessionservice.domain.exceptions.GameIsOverException;
-import com.permanovd.gamesessionservice.domain.exceptions.MoveIsInvalidException;
-import com.permanovd.gamesessionservice.domain.exceptions.NotPlayersTurnToMoveException;
-import com.permanovd.gamesessionservice.domain.exceptions.PitIsEmptyException;
+import com.permanovd.gamesessionservice.domain.exceptions.*;
 import com.permanovd.gamesessionservice.infrastructure.PitWithOwner;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +16,7 @@ public class MancalaGameService {
         if (!boardState.canMove(player))
             throw new NotPlayersTurnToMoveException("Player " + player + " cannot make a move. Turn of another player");
 
-        var boardWalker = new BoardWalker(boardState.getPlayerOnePits(), boardState.getPlayerTwoPits(), boardState.getSize(), player, pitNumber);
+        var boardWalker = getWalker(boardState, player, pitNumber);
         PitWithOwner startPit = boardWalker.next();
         int stonesFromPit = startPit.pit().takeAllStones();
         if (stonesFromPit == 0) throw new PitIsEmptyException("Pit " + pitNumber + " is empty");
@@ -27,23 +24,17 @@ public class MancalaGameService {
         int scoreAdded = 0;
         var nextPlayerToMove = player.otherOne();
         while (stonesFromPit > 0) {
-            PitWithOwner pitWithOwner = boardWalker.next();
-            if (!pitWithOwner.isAnotherPlayersMancala(player)) {
-                pitWithOwner.pit().addStone();
-                stonesFromPit--;
-            }
-            if (pitWithOwner.isCurrentPlayersMancala(player)) scoreAdded++;
-            boolean isLastStep = stonesFromPit == 0;
-            if (isLastStep && pitWithOwner.isCurrentPlayersMancala(player)) {
-                nextPlayerToMove = player;
-            }
+            var currentPit = boardWalker.next();
+            if (currentPit.isAnotherPlayersMancala(player)) continue;
 
-            if (isLastStep && pitWithOwner.isCurrentPlayersRegularPit(player) && pitWithOwner.pit().stonesInside() == 1) {
-                int stonesFromOppositePit = boardWalker.fromOppositeSide().pit().takeAllStones();
-                int stonesFromCurrentPit = pitWithOwner.pit().takeAllStones();
-                boardState.mancalaPitFor(player).addStones(stonesFromOppositePit);
-                boardState.mancalaPitFor(player).addStones(stonesFromCurrentPit);
-                scoreAdded += stonesFromOppositePit + stonesFromCurrentPit;
+            currentPit.pit().addStone();
+            stonesFromPit--;
+
+            if (currentPit.isCurrentPlayersMancala(player)) scoreAdded++;
+            boolean isLastStep = stonesFromPit == 0;
+            if (isLastStep && currentPit.isCurrentPlayersMancala(player)) nextPlayerToMove = player;
+            if (isLastStep && currentPit.isCurrentPlayersRegularPit(player) && currentPit.pit().stonesInside() == 1) {
+                scoreAdded = claimStonesFromOppositePit(boardState, player, boardWalker, currentPit, scoreAdded);
             }
         }
 
@@ -54,7 +45,16 @@ public class MancalaGameService {
         return new MoveResult(boardState, log);
     }
 
-    public MoveResult getCurrentState(BoardState boardState) throws MoveIsInvalidException {
-        return boardState.lastMoveResult();
+    private BoardWalker getWalker(BoardState boardState, Player player, int pitNumber) throws PitOutOfBoardRangeException {
+        return new BoardWalker(boardState.getPlayerOnePits(), boardState.getPlayerTwoPits(), boardState.getSize(), player, pitNumber);
+    }
+
+    private int claimStonesFromOppositePit(BoardState boardState, Player player, BoardWalker boardWalker, PitWithOwner currentPit, int scoreAdded) {
+        int stonesFromOppositePit = boardWalker.fromOppositeSide().pit().takeAllStones();
+        int stonesFromCurrentPit = currentPit.pit().takeAllStones();
+        boardState.mancalaPitFor(player).addStones(stonesFromOppositePit);
+        boardState.mancalaPitFor(player).addStones(stonesFromCurrentPit);
+        scoreAdded += stonesFromOppositePit + stonesFromCurrentPit;
+        return scoreAdded;
     }
 }
